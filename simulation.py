@@ -1,62 +1,13 @@
 import matplotlib.pyplot as plt
-
-
-def simulate(anchored):
-    # Parameters
-    a = 0.55
-    alpha = 0.3
-    phi_pi = 1.5
-    phi_y = 0.5
-    pi_star = 2
-    y_e = 0
-    A = 5
-
-    # Variables
-    r_star = (A - y_e) / a
-    r_prev = r_star
-    pi_prev = pi_star
-
-    # Results
-    results = []
-    for i in range(20):
-        if i < 5:
-            A_t = A
-        else:
-            A_t = A - 2
-        y = A_t - (a * r_prev)
-        if anchored:
-            pi_e = pi_star
-        else:
-            pi_e = pi_prev
-        pi = pi_e + (alpha * (y - y_e))
-        r = r_star + (phi_pi*(pi - pi_star)) + (phi_y*(y-y_e))
-        results.append((y, pi, r))
-        r_prev = r
-        pi_prev = pi
-
-    return results
+from functions import simulate, unpack_results
 
 
 results_anchored = simulate(anchored=True)
 results_unanchored = simulate(anchored=False)
 
 
-y_anchored = []
-pi_anchored = []
-r_anchored = []
-for y, pi, r in results_anchored:
-    y_anchored.append(y)
-    pi_anchored.append(pi)
-    r_anchored.append(r)
-
-
-y_unanchored = []
-pi_unanchored = []
-r_unanchored = []
-for y, pi, r in results_unanchored:
-    y_unanchored.append(y)
-    pi_unanchored.append(pi)
-    r_unanchored.append(r)
+y_anchored, pi_anchored, r_anchored = unpack_results(results_anchored)
+y_unanchored, pi_unanchored, r_unanchored = unpack_results(results_unanchored)
 
 
 fig, axes = plt.subplots(nrows=3, ncols=1, sharex=True, figsize=(10, 11))
