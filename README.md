@@ -1,66 +1,56 @@
 # nk-model-shock
 
-A three-equation New Keynesian model simulating how a negative demand shock
-propagates through an economy under two different expectation regimes.
+A three-equation New Keynesian model. It simulates a negative demand shock and
+compares what happens when inflation expectations are anchored and when they
+are not.
 
-## The question
-
-The question here is not "how big was the shock?" but "how do two different
-expectation regimes change the way a shock plays out?" The shock size is not
-observable and is not what this project tries to measure — it is a fixed input,
-and the comparison between regimes is the output.
+The model is not trying to measure a real shock. The shock size is an input I
+choose. The output is the comparison between the two regimes.
 
 ## The model
 
-**IS curve** — demand side:
+IS curve:
 
 ```
 y_t = A - a * r_(t-1)
 ```
 
-**Phillips curve** — prices:
+Phillips curve:
 
 ```
 pi_t = pi_e + alpha * (y_t - y_e)
 ```
 
-**Taylor rule** — policy:
+Taylor rule:
 
 ```
 r_t = r* + phi_pi * (pi_t - pi*) + phi_y * (y_t - y_e)
 ```
 
-The real interest rate is what matters here, and it enters the IS curve with a
-**one-period lag**. A rate change today does not move demand today: credit has
-to reprice, firms have to revise budgets, households have to reconsider large
-purchases. That chain takes time. The output gap, by contrast, is
-contemporaneous in the Phillips curve — a firm setting prices today can already
-observe whether demand is strong, so there is nothing to wait for.
+The real rate enters the IS curve with a one-period lag. A rate change today
+does not move demand today: credit has to reprice and firms have to revise
+budgets, and that takes time. The output gap enters the Phillips curve with no
+lag, because a firm setting prices today can already see whether demand is
+strong.
 
-That single lag is where all of the model's dynamics come from. Without it the
-system would jump straight to equilibrium and there would be nothing to watch.
+That lag is where the dynamics come from. Without it the model jumps straight
+to equilibrium.
 
-The neutral rate is not a free parameter. In equilibrium the output gap is zero,
-so the IS curve gives:
+The neutral rate is not a free parameter. Setting the output gap to zero in the
+IS curve gives:
 
 ```
 r* = (A - y_e) / a
 ```
 
-This is the real rate that holds output at potential.
-
 ## The two regimes
 
-The only difference between the two scenarios is one line — how expected
-inflation is formed:
+One line is different between them:
 
-- **Anchored:** `pi_e = pi*`. Agents believe the central bank and expect the
-  target regardless of what inflation actually does.
-- **Unanchored (backward-looking):** `pi_e = pi_(t-1)`. Agents expect whatever
-  happened last period, so a fall in inflation feeds into the next period's
-  expectation and pushes inflation down further.
+- **Anchored:** `pi_e = pi*`. People expect the target whatever inflation does.
+- **Unanchored:** `pi_e = pi_(t-1)`. People expect last period's inflation.
 
-Everything else — parameters, shock, policy rule — is identical.
+Everything else is the same.
 
 ## Parameters
 
@@ -71,34 +61,65 @@ Everything else — parameters, shock, policy rule — is identical.
 | `phi_pi` | 1.5 | Taylor rule response to inflation |
 | `phi_y` | 0.5 | Taylor rule response to the output gap |
 | `pi_star` | 2 | Inflation target |
-| `y_e` | 0 | Potential output (normalised to zero) |
+| `y_e` | 0 | Potential output, set to zero |
 | `A` | 5 | Autonomous demand |
+| `rho` | 0.7 | Persistence of the shock |
 
-The Taylor coefficients are the values Taylor originally proposed. `phi_pi > 1`
-is required — if the central bank responds less than one-for-one to inflation,
-a rate rise does not actually tighten in real terms and the system does not
-stabilise.
+`phi_pi` has to be above 1. If the central bank raises rates less than
+one-for-one with inflation, the real rate falls when inflation rises, policy
+does not actually tighten, and the model does not settle.
 
-`a` and `alpha` were not picked first and tested later. The model was first run
-with both set to 1, and it **diverged**: output and inflation oscillated with
-growing amplitude until they ran into the hundreds. With pass-through that
-strong, the central bank over-corrects every period and the lag turns each
-correction into a larger error in the opposite direction. Lowering both until
-the oscillations damped gave the current values. This is a stability exercise,
-not a calibration to data — the parameters sit in a region where the model
-behaves, not in a region estimated from any economy.
+I did not take `a` and `alpha` from data. I first ran the model with both set
+to 1 and it blew up: output and inflation oscillated into the hundreds. I
+lowered them until the oscillations died out. So these are values that keep the
+model stable, not estimates of any economy.
 
 ## The shock
 
-Autonomous demand drops by 2 for four periods (periods 5 through 8), then
-returns to its original level.
+Demand falls by 2 in period 5, then decays:
 
-The shock is **temporary** by design. A permanent drop in `A` would also lower
-the neutral rate, and since the Taylor rule keeps targeting the old `r*`, the
-simulation would end up showing what a stale neutral rate does rather than what
-anchoring does. That is a different question. With a temporary shock the neutral
-rate is unchanged once the shock passes, so what the chart shows is the
-expectation channel on its own.
+```
+shock_t = rho * shock_(t-1)
+```
+
+With `rho = 0.7` the shock goes -2.00, -1.40, -0.98, -0.69 and so on toward
+zero. This is an AR(1) process.
+
+The first version held the shock at full size for four periods and then
+switched it off. That put a jump in demand on the period it ended, and some of
+the oscillation in the results was coming from that jump instead of from the
+model. With decay there is no end date to pick, and `rho` says how persistent
+the shock is.
+
+The shock is temporary. A permanent fall in `A` would also lower the neutral
+rate, and since the Taylor rule keeps targeting the old `r*`, the chart would
+end up showing the cost of a stale neutral rate instead of the cost of
+unanchored expectations. That is a different question.
+
+## Results
+
+Both regimes take the same hit in period 5: output 2 below potential, inflation
+0.6 points below target.
+
+| | Anchored | Unanchored |
+|---|---|---|
+| Period 10, output gap / inflation | -0.16 / 1.95 | +0.23 / 1.33 |
+| Period 19, output gap / inflation | -0.01 / 2.00 | +0.11 / 1.85 |
+
+With anchored expectations inflation is back at target in about ten periods.
+With unanchored expectations it is still below target fourteen periods later,
+and by then the output gap has turned positive. The central bank closed the gap
+and overshot it, and inflation still has not come back.
+
+The output gap panel looks backwards at first: the unanchored line recovers
+faster and goes positive. The rate panel explains it. Inflation falls further
+when expectations are unanchored, so the Taylor rule cuts the real rate harder,
+and that extra stimulus pulls demand back faster. The central bank is easing
+more in the unanchored case and still cannot get inflation back to target.
+
+The reason is that a fall in inflation becomes next period's expectation, which
+pushes inflation down again. The disinflation outlives the shock that caused
+it. The problem is not weak demand, so closing the output gap does not fix it.
 
 ## Running it
 
@@ -106,18 +127,13 @@ expectation channel on its own.
 python simulation.py
 ```
 
-`functions.py` holds the model (`simulate`) and a helper that splits the results
-into separate series. `simulation.py` runs both scenarios and draws the chart.
+`functions.py` has the model and a helper that splits the results into separate
+series. `simulation.py` runs both scenarios and draws the chart.
 
 ## Limitations
 
-- **No lower bound on the interest rate.** Nominal rates cannot go far below
-  zero in reality; the model has no such constraint, so over a long enough
-  simulation the rate can drift into territory that would not be possible.
-- **The shock size is arbitrary.** Two units of autonomous demand is a choice,
-  not a measurement.
-- **Backward-looking expectations are a simplification.** Real expectations are
-  neither fully anchored nor purely adaptive; these two cases are the endpoints
-  of a spectrum, not descriptions of any actual economy.
-- **This is not a model of any particular country.** The parameters were chosen
-  for stability, and a 2% inflation target does not describe Türkiye.
+- There is no lower bound on the interest rate.
+- The shock size is a choice, not a measurement.
+- Backward-looking expectations are a simplification. Real expectations sit
+  somewhere between the two cases here.
+- This is not a model of any country. The parameters were picked for stability.
