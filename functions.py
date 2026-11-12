@@ -1,16 +1,23 @@
-pi_star = 2
-shock_period = 5
+import pandas as pd
+
+# Shared with simulation.py: the chart marks the shock period and the target.
+shock_start: int = 5
+pi_star: float = 2
 
 
-def simulate(anchored, periods=20, shock_size=-2):
-    # Parameters
-    a = 0.55
-    alpha = 0.3
-    phi_pi = 1.5
-    phi_y = 0.5
-    y_e = 0
-    A = 5
-    rho = 0.7
+def simulate(
+    anchored: bool,
+    periods: int = 20,
+    shock_size: float = -2,
+    a: float = 0.55,
+    alpha: float = 0.3,
+    phi_pi: float = 1.5,
+    phi_y: float = 0.5,
+    y_e: float = 0,
+    A: float = 5,
+    rho: float = 0.7
+):
+    """Simulate a demand shock under anchored or unanchored expectations."""
 
     # Variables
     r_star = (A - y_e) / a
@@ -22,7 +29,7 @@ def simulate(anchored, periods=20, shock_size=-2):
     results = []
 
     for i in range(periods):
-        if i == shock_period:
+        if i == shock_start:
             shock = shock_size
 
         y = (A + shock) - (a * r_prev)
@@ -42,14 +49,5 @@ def simulate(anchored, periods=20, shock_size=-2):
     return results
 
 
-def unpack_results(results):
-    y_list = []
-    pi_list = []
-    r_list = []
-
-    for y, pi, r in results:
-        y_list.append(y)
-        pi_list.append(pi)
-        r_list.append(r)
-
-    return y_list, pi_list, r_list
+def df_results(results):
+    return pd.DataFrame(results, columns=['Output', 'Inflation', 'Real Interest Rate'])

@@ -127,8 +127,15 @@ it. The problem is not weak demand, so closing the output gap does not fix it.
 python simulation.py
 ```
 
-`functions.py` has the model and a helper that splits the results into separate
-series. `simulation.py` runs both scenarios and draws the chart.
+`functions.py` has the model and a helper that turns the results into a
+DataFrame. `simulation.py` runs both scenarios and draws the chart.
+
+All of the parameters above except `pi_star` are keyword arguments of
+`simulate`, so a scenario can be run without editing the file:
+
+```python
+simulate(anchored=False, rho=0.9)   # a more persistent shock
+```
 
 ## Limitations
 
@@ -136,4 +143,5 @@ series. `simulation.py` runs both scenarios and draws the chart.
 - The shock size is a choice, not a measurement.
 - Backward-looking expectations are a simplification. Real expectations sit
   somewhere between the two cases here.
-- This is not a model of any country. The parameters were picked for stability.
+- This is not a model of any country. The parameters were picked for stability,
+  and a 2% target does not describe Türkiye.
