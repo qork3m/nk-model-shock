@@ -127,15 +127,22 @@ it. The problem is not weak demand, so closing the output gap does not fix it.
 python simulation.py
 ```
 
-`functions.py` has the model and a helper that turns the results into a
-DataFrame. `simulation.py` runs both scenarios and draws the chart.
+`functions.py` has the model, the neutral-rate calculation and a helper that
+turns the results into a DataFrame. `simulation.py` runs both scenarios and
+draws the chart.
 
-All of the parameters above except `pi_star` are keyword arguments of
-`simulate`, so a scenario can be run without editing the file:
+All of the parameters live in one dictionary, `PARAMS`, which `simulate` takes
+as an argument. To run a different scenario, copy the dictionary with the
+values you want changed — the original is left untouched:
 
 ```python
-simulate(anchored=False, rho=0.9)   # a more persistent shock
+simulate(anchored=False, params=dict(PARAMS, rho=0.9))
 ```
+
+`r*` is deliberately not in the dictionary, because it is derived rather than
+chosen. `neutral_rate(params)` computes it from `A`, `y_e` and `a`. Both the
+model and the chart call that function, so changing `a` moves the neutral rate
+in both at once instead of leaving one of them stale.
 
 ## Limitations
 

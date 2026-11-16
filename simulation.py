@@ -1,13 +1,19 @@
 import os
 import matplotlib.pyplot as plt
-from functions import simulate, df_results, pi_star, shock_start
+from functions import simulate, df_results, PARAMS, neutral_rate
 
+# params
+params = PARAMS
+pi_star = params["pi_star"]
+shock_start = params["shock_start"]
+y_e = params["y_e"]
+r_star = neutral_rate(params)
 
 folder = os.path.dirname(os.path.abspath(__file__))
 
 
-results_anchored = simulate(anchored=True)
-results_unanchored = simulate(anchored=False)
+results_anchored = simulate(anchored=True, params=params)
+results_unanchored = simulate(anchored=False, params=params)
 
 df_anchored = df_results(results_anchored)
 df_unanchored = df_results(results_unanchored)
@@ -18,7 +24,7 @@ fig, axes = plt.subplots(nrows=3, ncols=1, sharex=True, figsize=(10, 11))
 # Panel 1: Output gap
 axes[0].plot(df_anchored['Output'], label="Anchored", color="blue")
 axes[0].plot(df_unanchored['Output'], label="Unanchored", color="red")
-axes[0].axhline(y=0, color="black", linewidth=0.8)
+axes[0].axhline(y=y_e, color="black", linewidth=0.8)
 axes[0].set_title("Output Gap")
 axes[0].set_ylabel("Output gap")
 axes[0].legend()
@@ -34,7 +40,7 @@ axes[1].set_ylabel("Inflation (%)")
 axes[2].plot(df_anchored['Real Interest Rate'], label="Anchored", color="blue")
 axes[2].plot(df_unanchored['Real Interest Rate'],
              label="Unanchored", color="red")
-axes[2].axhline(y=df_unanchored['Real Interest Rate'][0],
+axes[2].axhline(y=r_star,
                 color="black", linewidth=0.8, linestyle=":")
 axes[2].set_title("Real Interest Rate")
 axes[2].set_ylabel("Rate (%)")
