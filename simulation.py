@@ -5,7 +5,8 @@ from functions import simulate, df_results, PARAMS, neutral_rate
 # params
 params = PARAMS
 pi_star = params["pi_star"]
-shock_start = params["shock_start"]
+demand_shock_start = params["demand_shock_start"]
+supply_shock_start = params["supply_shock_start"]
 y_e = params["y_e"]
 r_star = neutral_rate(params)
 
@@ -27,7 +28,6 @@ axes[0].plot(df_unanchored['Output'], label="Unanchored", color="red")
 axes[0].axhline(y=y_e, color="black", linewidth=0.8)
 axes[0].set_title("Output Gap")
 axes[0].set_ylabel("Output gap")
-axes[0].legend()
 
 # Panel 2: Inflation
 axes[1].plot(df_anchored['Inflation'], label="Anchored", color="blue")
@@ -49,9 +49,15 @@ axes[2].set_xticks(range(0, len(df_unanchored), 2))
 
 # Shock marker on all three
 for ax in axes:
-    ax.axvline(shock_start, color="gray", linestyle="--")
+    ax.axvline(demand_shock_start, color="gray",
+               linestyle="--", label="Demand Shock")
+    ax.axvline(supply_shock_start, color="green",
+               linestyle="--", label="Cost-Push Shock")
 
-fig.suptitle("Negative Demand Shock: Anchored vs Unanchored Expectations",
+axes[2].legend()
+
+
+fig.suptitle("Demand and Cost-Push Shock: Anchored vs Unanchored Expectations",
              fontsize=14, fontweight="bold")
 plt.tight_layout()
 plt.savefig(os.path.join(folder, "shock_simulation.png"),
