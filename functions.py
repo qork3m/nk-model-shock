@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 PARAMS = {
     "demand_shock_size": -2,
     "supply_shock_size": 3,
